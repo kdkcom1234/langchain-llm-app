@@ -29,6 +29,9 @@ def create_vertor_db_from_youtube_url(video_url: str) -> FAISS:
   
   # 텍스트나 카테고리형 데이터와 같은 비벡터형 데이터에 대해서는 직접적으로 처리할 수 없습니다. 
   # 이러한 데이터를 벡터 형태로 변환하는 과정이 필요하며, 이를 위해 일반적으로 워드 임베딩(word embedding)이나 원-핫 인코딩(one-hot encoding)과 같은 기법이 사용됩니다.
+
+  # https://wikidocs.net/33520
+  # 워드 임베딩: 단어를 벡터로 표현하는 방법으로, 단어를 밀집 표현으로 변환합니다
   db = FAISS.from_documents(docs, embeddings)
   return db
 
