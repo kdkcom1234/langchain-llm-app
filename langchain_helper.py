@@ -1,6 +1,12 @@
 from langchain_openai import OpenAI
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
+from langchain.agents import load_tools
+from langchain.agents import create_react_agent
+from langchain.agents import initialize_agent
+from langchain.agents import AgentType
+from langchain.agents import AgentExecutor
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -27,6 +33,21 @@ def generate_pet_name(animal_type, pet_color):
 
   return response
 
+def langchain_agent():
+  llm = OpenAI(temperature=0.5)
+
+  # 사용할 툴(외부 도구들)
+  # tools = load_tools(["wikipedia", "llm-math"], llm=llm)
+  tools = load_tools(["wikipedia"], llm=llm)
+
+  # 에이전트 생성
+  agent = initialize_agent(llm=llm, tools=tools, verbose=True)
+  # result = agent.run("What is the average age of a dog? Multiply the age by 3")
+  result = agent.run("average age of dogs")
+
+  print(result)
+
 if __name__ == "__main__":
-  print(generate_pet_name("cat", "silver")["text"])
-  print(generate_pet_name("pig", "black")["text"])
+  langchain_agent()
+  # print(generate_pet_name("cat", "silver")["text"])
+  # print(generate_pet_name("pig", "black")["text"])

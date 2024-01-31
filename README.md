@@ -2,4 +2,6 @@
 ```sh
 pip install langchain openai streamlit python-dotenv
 pip install -U langchain-openai
+pip install wikipedia
+pip install numexpr
 ```
