@@ -24,7 +24,6 @@ def create_vertor_db_from_youtube_url(video_url: str) -> FAISS:
   text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
   docs = text_splitter.split_documents(transcript)
 
-  # 벡터는 텍스트를 숫자로 변환한 것
   db = FAISS.from_documents(docs, embeddings)
   return db
 
