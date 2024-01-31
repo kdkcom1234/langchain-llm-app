@@ -28,6 +28,38 @@ def create_vertor_db_from_youtube_url(video_url: str) -> FAISS:
   db = FAISS.from_documents(docs, embeddings)
   return db
 
-db = create_vertor_db_from_youtube_url(video_url)
+def get_response_from_query(db, query, k=4):
+    """
+    text-davinci-003 can handle up to 4097 tokens. Setting the chunksize to 1000 and k to 4 maximizes
+    the number of tokens to analyze.
+    """
 
-print(db)
+    # 벡터DB내에서 질의어로 유사도 검색을 진행하여 문서(유튜브 트랜스크립트의 일부분(청크)) 반환
+    # 최대 결과 문서개수는 k개 만큼
+    docs = db.similarity_search(query, k=k)
+    docs_page_content = " ".join([d.page_content for d in docs])
+
+    llm = OpenAI(model_name="text-davinci-003")
+
+    prompt = PromptTemplate(
+        input_variables=["question", "docs"],
+        template="""
+        You are a helpful assistant that that can answer questions about youtube videos 
+        based on the video's transcript.
+        
+        Answer the following question: {question}
+        By searching the following video transcript: {docs}
+        
+        Only use the factual information from the transcript to answer the question.
+        
+        If you feel like you don't have enough information to answer the question, say "I don't know".
+        
+        Your answers should be verbose and detailed.
+        """,
+    )
+
+    chain = LLMChain(llm=llm, prompt=prompt)
+
+    response = chain.run(question=query, docs=docs_page_content)
+    response = response.replace("\n", "")
+    return response, docs
