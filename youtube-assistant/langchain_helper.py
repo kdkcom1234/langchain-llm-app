@@ -1,3 +1,4 @@
+# https://github.com/rishabkumar7/youtube-assistant-langchain
 from langchain.document_loaders.youtube import YoutubeLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.llms.openai import OpenAI

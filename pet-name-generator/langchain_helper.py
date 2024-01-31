@@ -1,3 +1,4 @@
+# https://github.com/rishabkumar7/pets-name-langchain
 from langchain_openai import OpenAI
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
