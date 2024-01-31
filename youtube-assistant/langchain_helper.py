@@ -24,8 +24,11 @@ def create_vertor_db_from_youtube_url(video_url: str) -> FAISS:
   text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
   docs = text_splitter.split_documents(transcript)
 
-  # 파시스는 먼저 데이터를 양자화하여 인덱스를 생성하고, 이후 이 인덱스를 사용하여 유사성 검색을 수행합니다.
   # https://dajeblog.co.kr/16-faiss%EC%97%90-%EB%8C%80%ED%95%9C-%EB%AA%A8%EB%93%A0-%EA%B2%83/
+  # 파시스는 데이터를 양자화하여 인덱스를 생성하고, 이후 이 인덱스를 사용하여 유사성 검색을 수행합니다.
+  
+  # 텍스트나 카테고리형 데이터와 같은 비벡터형 데이터에 대해서는 직접적으로 처리할 수 없습니다. 
+  # 이러한 데이터를 벡터 형태로 변환하는 과정이 필요하며, 이를 위해 일반적으로 워드 임베딩(word embedding)이나 원-핫 인코딩(one-hot encoding)과 같은 기법이 사용됩니다.
   db = FAISS.from_documents(docs, embeddings)
   return db
 
