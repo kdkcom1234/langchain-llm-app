@@ -24,10 +24,49 @@ def create_vertor_db_from_youtube_url(video_url: str) -> FAISS:
   text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
   docs = text_splitter.split_documents(transcript)
 
-  # 벡터는 텍스트를 숫자로 변환한 것
+  # https://dajeblog.co.kr/16-faiss%EC%97%90-%EB%8C%80%ED%95%9C-%EB%AA%A8%EB%93%A0-%EA%B2%83/
+  # 파시스는 데이터를 양자화하여 인덱스를 생성하고, 이후 이 인덱스를 사용하여 유사성 검색을 수행합니다.
+  
+  # 텍스트나 카테고리형 데이터와 같은 비벡터형 데이터에 대해서는 직접적으로 처리할 수 없습니다. 
+  # 이러한 데이터를 벡터 형태로 변환하는 과정이 필요하며, 이를 위해 일반적으로 워드 임베딩(word embedding)이나 원-핫 인코딩(one-hot encoding)과 같은 기법이 사용됩니다.
+
+  # https://wikidocs.net/33520
+  # 워드 임베딩: 단어를 벡터로 표현하는 방법으로, 단어를 밀집 표현으로 변환합니다
   db = FAISS.from_documents(docs, embeddings)
   return db
 
-db = create_vertor_db_from_youtube_url(video_url)
+def get_response_from_query(db, query, k=4):
+    """
+    text-davinci-003 can handle up to 4097 tokens. Setting the chunksize to 1000 and k to 4 maximizes
+    the number of tokens to analyze.
+    """
 
-print(db)
+    # 벡터DB내에서 질의어로 유사도 검색을 진행하여 문서(유튜브 트랜스크립트의 일부분(청크)) 반환
+    # 최대 결과 문서개수는 k개 만큼
+    docs = db.similarity_search(query, k=k)
+    docs_page_content = " ".join([d.page_content for d in docs])
+
+    llm = OpenAI(model_name="text-davinci-003")
+
+    prompt = PromptTemplate(
+        input_variables=["question", "docs"],
+        template="""
+        You are a helpful assistant that that can answer questions about youtube videos 
+        based on the video's transcript.
+        
+        Answer the following question: {question}
+        By searching the following video transcript: {docs}
+        
+        Only use the factual information from the transcript to answer the question.
+        
+        If you feel like you don't have enough information to answer the question, say "I don't know".
+        
+        Your answers should be verbose and detailed.
+        """,
+    )
+
+    chain = LLMChain(llm=llm, prompt=prompt)
+
+    response = chain.run(question=query, docs=docs_page_content)
+    response = response.replace("\n", "")
+    return response, docs
